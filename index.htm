@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>To Do List</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>📋 Lista de tarefas</h1>
+    <div class="input-container">
+      <input type="text" id="taskInput" placeholder="Digite uma nova tarefa..." maxlength="100" />
+      <button id="addBtn">Adicionar</button>
+    </div>
+
+    <div class="task-stats">
+      <span>Total: <strong id="totalTasks">0</strong></span>
+      <span>Concluídas: <strong id="completedTasks">0</strong></span>
+      <span>Restantes: <strong id="remainingTasks">0</strong></span>
+    </div>
+
+    <ul id="todoList">
+      <li class="empty-state">
+        <div>Nenhuma tarefa ainda</div>
+        <div style="font-size: 14px; margin-top: 10px;">Adicione uma tarefa acima para começar</div>
+      </li>
+    </ul>
+  </div>
+
+  <script>
+    class TodoList {
+      constructor() {
+        this.tasks = [];
+        this.taskInput = document.getElementById('taskInput');
+        this.addBtn = document.getElementById('addBtn');
+        this.todoList = document.getElementById('todoList');
+        this.totalTasks = document.getElementById('totalTasks');
+        this.completedTasks = document.getElementById('completedTasks');
+        this.remainingTasks = document.getElementById('remainingTasks');
+
+        this.init();   
+      }
+
+      init() {
+        this.addBtn.addEventListener('click', () => this.addTask());
+        this.taskInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            this.addTask();
+          }
+        });
+
+        this.updateStats();
+      }
+
+      addTask() {
+        const taskText = this.taskInput.value.trim();
+
+        if (taskText === '') {
+          this.showInputError();
+          return;
+        }
+
+        // VERIFICA SE A TAREFA JÁ EXISTE (caso insentive)
+
+        const existe = this.tasks.some(t => t.text.toLowerCase() === taskText.toLowerCase());
+        if (existe) {
+            alert("Essa Tarefa ja existe!");
+        }
+
+        const task = {
+          id: Date.now(),
+          text: taskText,
+          completed: false,
+          createdAt: new Date()
+        };
+
+        this.tasks.push(task);
+        this.taskInput.value = '';
+        this.renderTasks();
+        this.updateStats();
+        this.showSuccessMessage();
+      }
+
+      showInputError() {
+        this.taskInput.style.borderColor = '#ff4757';
+        this.taskInput.placeholder = 'Por favor, digite uma tarefa!';
+        setTimeout(() => {
+          this.taskInput.style.borderColor = '#e0e0e0';
+          this.taskInput.placeholder = 'Digite uma nova tarefa...';
+        }, 2000);
+      }
+
+      showSuccessMessage() {
+        const originalText = this.addBtn.textContent;
+        this.addBtn.textContent = '✓ Adicionado!';
+        this.addBtn.style.background = '#4CAF50';
+        setTimeout(() => {
+          this.addBtn.textContent = originalText;
+          this.addBtn.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
+        }, 1000);
+      }
+
+      toggleTask(taskId) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (task) {
+          task.completed = !task.completed;
+          this.renderTasks();
+          this.updateStats();
+        }
+      }
+
+      deleteTask(taskId) {
+        this.tasks = this.tasks.filter(t => t.id !== taskId);
+        this.renderTasks();
+        this.updateStats();
+      }
+
+      renderTasks() {
+        if (this.tasks.length === 0) {
+          this.todoList.innerHTML = `
+            <li class="empty-state">
+              <div>Nenhuma tarefa ainda</div>
+              <div style="font-size: 14px; margin-top: 10px;">Adicione uma tarefa acima para começar!</div>
+            </li>
+          `;
+          return;
+        }
+
+        this.todoList.innerHTML = this.tasks.map(task => `
+          <li class="task-item ${task.completed ? 'completed' : ''}">
+            <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="todoApp.toggleTask(${task.id})">
+              ${task.completed ? '✓' : ''}
+            </div>
+            <span class="task-text">${this.escapeHtml(task.text)}</span>
+            <button class="delete-btn" onclick="todoApp.deleteTask(${task.id})">🗑️</button>
+          </li>
+        `).join('');
+      }
+
+      updateStats() {
+        const total = this.tasks.length;
+        const completed = this.tasks.filter(t => t.completed).length;
+        const remaining = total - completed;
+
+        this.totalTasks.textContent = total;
+        this.completedTasks.textContent = completed;
+        this.remainingTasks.textContent = remaining;
+      }
+
+      escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+    }
+
+    const todoApp = new TodoList();
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const title = document.querySelector('h1');
+      const originalText = title.textContent;
+      title.textContent = '';
+      let i = 0;
+      const typeWriter = () => {
+        if (i < originalText.length) {
+          title.textContent += originalText.charAt(i);
+          i++;
+          setTimeout(typeWriter, 100);
+        }
+      };
+      setTimeout(typeWriter, 500);
+    });
+  </script>
+</body>
+</html>
