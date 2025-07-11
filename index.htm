@@ -38,11 +38,28 @@
         this.totalTasks = document.getElementById('totalTasks');
         this.completedTasks = document.getElementById('completedTasks');
         this.remainingTasks = document.getElementById('remainingTasks');
+        this.filter = "all"; //alterado
 
         this.init();   
       }
 
+      //adicionado
+      saveToLocalStorage() {
+        localStorage.setItem("tarefas", JSON.stringify(this.tasks));
+      }
+
+    loadFromLocalStorage() {
+        const data = localStorage.getItem("tarefas");
+        if (data) {
+            this.tasks = JSON.parse(data);
+            this.renderTasks();
+            this.updateStats();
+        }
+    }
+
       init() {
+    
+        this.loadFromLocalStorage();  // carrega as tarefas salvas
         this.addBtn.addEventListener('click', () => this.addTask());
         this.taskInput.addEventListener('keypress', (e) => {
           if (e.key === 'Enter') {
@@ -79,6 +96,7 @@
         this.taskInput.value = '';
         this.renderTasks();
         this.updateStats();
+        this.saveToLocalStorage(); //novo
         this.showSuccessMessage();
       }
 
@@ -114,9 +132,39 @@
         this.tasks = this.tasks.filter(t => t.id !== taskId);
         this.renderTasks();
         this.updateStats();
+        this.saveToLocalStorage(); //novo
+      }
+
+      editTask(taskId) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        const novoTexto = prompt("Edite a tarefa:", task.text);
+
+        if(novoTexto !== null) {
+          const textoFinal = novoTexto.trim();
+          if (textoFinal === '') {
+            alert("O texto não pode estar vazio.");
+            return;
+          }
+         const duplicada = this.tasks.some( t =>
+           t.text.toLowerCase() === textoFinal.toLowerCase() && t.id !== taskId
+         );
+        if (duplicada) {
+          alert("Ja existe uma tarefa com esse nome.");
+          return;
+        }
+
+        task.text = textoFinal;
+        this.renderTasks();
+        this.updateStats();
+        this.saveToLocalStorage();
+        }
       }
 
       renderTasks() {
+         let filteredTasks = this.tasks; // ajustavel se quiser no futuro
+
         if (this.tasks.length === 0) {
           this.todoList.innerHTML = `
             <li class="empty-state">
@@ -127,12 +175,15 @@
           return;
         }
 
-        this.todoList.innerHTML = this.tasks.map(task => `
+
+        // botão edição
+        this.todoList.innerHTML = filteredTasks.map(task => `
           <li class="task-item ${task.completed ? 'completed' : ''}">
             <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="todoApp.toggleTask(${task.id})">
               ${task.completed ? '✓' : ''}
             </div>
             <span class="task-text">${this.escapeHtml(task.text)}</span>
+            <button class="delete-btn" onclick="todoApp.editTask(${task.id})">✏️</button>
             <button class="delete-btn" onclick="todoApp.deleteTask(${task.id})">🗑️</button>
           </li>
         `).join('');
