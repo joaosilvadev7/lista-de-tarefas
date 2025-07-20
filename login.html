@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Lista de Tarefas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* Estilos do Login/Cadastro */
+        .auth-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .form-container {
+            position: relative;
+            min-height: 500px;
+        }
+
+        .form {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 40px;
+            transition: transform 0.6s ease-in-out;
+        }
+
+        .form.login {
+            transform: translateX(0);
+        }
+
+        .form.signup {
+            transform: translateX(100%);
+        }
+
+        .form.active.login {
+            transform: translateX(0);
+        }
+
+        .form.active.signup {
+            transform: translateX(0);
+        }
+
+        .form:not(.active) {
+            transform: translateX(-100%);
+        }
+
+        .form h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+            font-size: 2rem;
+            font-weight: 300;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e1e1;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .switch-form {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+
+        .switch-form a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .switch-form a:hover {
+            text-decoration: underline;
+        }
+
+        .message {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .forgot-password {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .forgot-password a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+
+        /* Estilos da Lista de Tarefas */
+        .todo-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 600px;
+            display: none;
+        }
+
+        .todo-container.active {
+            display: block;
+        }
+
+        .todo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .todo-container h1 {
+            color: #333;
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin: 0;
+        }
+
+        .logout-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #ff3838;
+            transform: translateY(-2px);
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .input-container input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .input-container input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-container button {
+            padding: 15px 25px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .input-container button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .task-stats {
+            display: flex;
+            justify-content: space-around;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .task-stats strong {
+            color: #333;
+        }
+
+        #todoList {
+            list-style: none;
+            padding: 0;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .task-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .task-item.completed {
+            opacity: 0.7;
+            background: #f8f9fa;
+        }
+
+        .task-checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            margin-right: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .task-checkbox.checked {
+            background: #4CAF50;
+            border-color: #4CAF50;
+            color: white;
+        }
+
+        .task-text {
+            flex: 1;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            margin-left: 10px;
+            padding: 5px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+            padding: 40px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 480px) {
+            .form {
+                padding: 30px 20px;
+            }
+            
+            .form h2 {
+                font-size: 1.5rem;
+            }
+
+            .todo-container {
+                padding: 20px;
+            }
+
+            .todo-container h1 {
+                font-size: 2rem;
+            }
+
+            .input-container {
+                flex-direction: column;
+            }
+
+            .task-stats {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Tela de Login/Cadastro -->
+    <div class="auth-container" id="authContainer">
+        <div class="form-container">
+            <!-- Formulário de Login -->
+            <form class="form login active" id="loginForm">
+                <h2>Entrar</h2>
+                <div class="message" id="loginMessage"></div>
+                
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="loginPassword">Senha</label>
+                    <input type="password" id="loginPassword" name="password" required>
+                </div>
+                
+                <button type="submit" class="btn">Entrar</button>
+                
+                <div class="forgot-password">
+                    <a href="#" onclick="showForgotPassword()">Esqueceu sua senha?</a>
+                </div>
+                
+                <div class="switch-form">
+                    Não tem uma conta? <a onclick="showSignup()">Cadastre-se</a>
+                </div>
+            </form>
+
+            <!-- Formulário de Cadastro -->
+            <form class="form signup" id="signupForm">
+                <h2>Cadastro</h2>
+                <div class="message" id="signupMessage"></div>
+                
+                <div class="form-group">
+                    <label for="signupName">Nome</label>
+                    <input type="text" id="signupName" name="name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="signupPassword">Senha</label>
+                    <input type="password" id="signupPassword" name="password" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirmPassword">Confirmar Senha</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required>
+                </div>
+                
+                <button type="submit" class="btn">Cadastrar</button>
+                
+                <div class="switch-form">
+                    Já tem uma conta? <a onclick="showLogin()">Faça login</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tela da Lista de Tarefas -->
+    <div class="todo-container" id="todoContainer">
+        <div class="todo-header">
+            <h1 id="todoTitle">📋 Lista de tarefas</h1>
+            <button class="logout-btn" onclick="logout()">Sair</button>
+        </div>
+        
+        <div class="input-container">
+            <input type="text" id="taskInput" placeholder="Digite uma nova tarefa..." maxlength="100" />
+            <button id="addBtn">Adicionar</button>
+        </div>
+
+        <div class="task-stats">
+            <span>Total: <strong id="totalTasks">0</strong></span>
+            <span>Concluídas: <strong id="completedTasks">0</strong></span>
+            <span>Restantes: <strong id="remainingTasks">0</strong></span>
+        </div>
+
+        <ul id="todoList">
+            <li class="empty-state">
+                <div>Nenhuma tarefa ainda</div>
+                <div style="font-size: 14px; margin-top: 10px;">Adicione uma tarefa acima para começar</div>
+            </li>
+        </ul>
+    </div>
+
+    <script>
+        // Dados dos usuários e sessão
+        let users = [];
+        let currentUser = null;
+        let todoApp = null;
+
+        // Classe da Lista de Tarefas
+        class TodoList {
+            constructor(userName) {
+                this.userName = userName;
+                this.tasks = [];
+                this.taskInput = document.getElementById('taskInput');
+                this.addBtn = document.getElementById('addBtn');
+                this.todoList = document.getElementById('todoList');
+                this.totalTasks = document.getElementById('totalTasks');
+                this.completedTasks = document.getElementById('completedTasks');
+                this.remainingTasks = document.getElementById('remainingTasks');
+                this.filter = "all";
+
+                this.init();   
+            }
+
+            saveToLocalStorage() {
+                const userTasks = JSON.parse(localStorage.getItem("userTasks") || "{}");
+                userTasks[currentUser.email] = this.tasks;
+                localStorage.setItem("userTasks", JSON.stringify(userTasks));
+            }
+
+            loadFromLocalStorage() {
+                const userTasks = JSON.parse(localStorage.getItem("userTasks") || "{}");
+                if (userTasks[currentUser.email]) {
+                    this.tasks = userTasks[currentUser.email];
+                    this.renderTasks();
+                    this.updateStats();
+                }
+            }
+
+            init() {
+                this.loadFromLocalStorage();
+                this.addBtn.addEventListener('click', () => this.addTask());
+                this.taskInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.addTask();
+                    }
+                });
+                this.updateStats();
+            }
+
+            addTask() {
+                const taskText = this.taskInput.value.trim();
+
+                if (taskText === '') {
+                    this.showInputError();
+                    return;
+                }
+
+                const existe = this.tasks.some(t => t.text.toLowerCase() === taskText.toLowerCase());
+                if (existe) {
+                    alert("Essa tarefa já existe!");
+                    return;
+                }
+
+                const task = {
+                    id: Date.now(),
+                    text: taskText,
+                    completed: false,
+                    createdAt: new Date()
+                };
+
+                this.tasks.push(task);
+                this.taskInput.value = '';
+                this.renderTasks();
+                this.updateStats();
+                this.saveToLocalStorage();
+                this.showSuccessMessage();
+            }
+
+            showInputError() {
+                this.taskInput.style.borderColor = '#ff4757';
+                this.taskInput.placeholder = 'Por favor, digite uma tarefa!';
+                setTimeout(() => {
+                    this.taskInput.style.borderColor = '#e0e0e0';
+                    this.taskInput.placeholder = 'Digite uma nova tarefa...';
+                }, 2000);
+            }
+
+            showSuccessMessage() {
+                const originalText = this.addBtn.textContent;
+                this.addBtn.textContent = '✓ Adicionado!';
+                this.addBtn.style.background = '#4CAF50';
+                setTimeout(() => {
+                    this.addBtn.textContent = originalText;
+                    this.addBtn.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
+                }, 1000);
+            }
+
+            toggleTask(taskId) {
+                const task = this.tasks.find(t => t.id === taskId);
+                if (task) {
+                    task.completed = !task.completed;
+                    this.renderTasks();
+                    this.updateStats();
+                    this.saveToLocalStorage();
+                }
+            }
+
+            deleteTask(taskId) {
+                this.tasks = this.tasks.filter(t => t.id !== taskId);
+                this.renderTasks();
+                this.updateStats();
+                this.saveToLocalStorage();
+            }
+
+            editTask(taskId) {
+                const task = this.tasks.find(t => t.id === taskId);
+                if (!task) return;
+
+                const novoTexto = prompt("Edite a tarefa:", task.text);
+
+                if(novoTexto !== null) {
+                    const textoFinal = novoTexto.trim();
+                    if (textoFinal === '') {
+                        alert("O texto não pode estar vazio.");
+                        return;
+                    }
+                    const duplicada = this.tasks.some(t =>
+                        t.text.toLowerCase() === textoFinal.toLowerCase() && t.id !== taskId
+                    );
+                    if (duplicada) {
+                        alert("Já existe uma tarefa com esse nome.");
+                        return;
+                    }
+
+                    task.text = textoFinal;
+                    this.renderTasks();
+                    this.updateStats();
+                    this.saveToLocalStorage();
+                }
+            }
+
+            renderTasks() {
+                if (this.tasks.length === 0) {
+                    this.todoList.innerHTML = `
+                        <li class="empty-state">
+                            <div>Nenhuma tarefa ainda</div>
+                            <div style="font-size: 14px; margin-top: 10px;">Adicione uma tarefa acima para começar!</div>
+                        </li>
+                    `;
+                    return;
+                }
+
+                this.todoList.innerHTML = this.tasks.map(task => `
+                    <li class="task-item ${task.completed ? 'completed' : ''}">
+                        <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="todoApp.toggleTask(${task.id})">
+                            ${task.completed ? '✓' : ''}
+                        </div>
+                        <span class="task-text">${this.escapeHtml(task.text)}</span>
+                        <button class="delete-btn" onclick="todoApp.editTask(${task.id})">✏️</button>
+                        <button class="delete-btn" onclick="todoApp.deleteTask(${task.id})">🗑️</button>
+                    </li>
+                `).join('');
+            }
+
+            updateStats() {
+                const total = this.tasks.length;
+                const completed = this.tasks.filter(t => t.completed).length;
+                const remaining = total - completed;
+
+                this.totalTasks.textContent = total;
+                this.completedTasks.textContent = completed;
+                this.remainingTasks.textContent = remaining;
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+
+        // Funções de autenticação
+        function showLogin() {
+            document.querySelector('.form.login').classList.add('active');
+            document.querySelector('.form.signup').classList.remove('active');
+            clearMessages();
+        }
+
+        function showSignup() {
+            document.querySelector('.form.signup').classList.add('active');
+            document.querySelector('.form.login').classList.remove('active');
+            clearMessages();
+        }
+
+        function clearMessages() {
+            document.querySelectorAll('.message').forEach(msg => {
+                msg.style.display = 'none';
+                msg.textContent = '';
+            });
+        }
+
+        function showMessage(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `message ${type}`;
+            element.style.display = 'block';
+            
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 5000);
+        }
+
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        function validatePassword(password) {
+            return password.length >= 6;
+        }
+
+        function handleSignup(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (!name || !email || !password || !confirmPassword) {
+                showMessage('signupMessage', 'Por favor, preencha todos os campos.', 'error');
+                return;
+            }
+
+            if (!validateEmail(email)) {
+                showMessage('signupMessage', 'Por favor, insira um email válido.', 'error');
+                return;
+            }
+
+            if (!validatePassword(password)) {
+                showMessage('signupMessage', 'A senha deve ter pelo menos 6 caracteres.', 'error');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showMessage('signupMessage', 'As senhas não coincidem.', 'error');
+                return;
+            }
+
+            if (users.find(user => user.email === email)) {
+                showMessage('signupMessage', 'Este email já está cadastrado.', 'error');
+                return;
+            }
+
+            const newUser = { name, email, password };
+            users.push(newUser);
+            
+            // Salvar usuários no localStorage
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            showMessage('signupMessage', 'Cadastro realizado com sucesso!', 'success');
+            document.getElementById('signupForm').reset();
+            
+            setTimeout(() => {
+                showLogin();
+            }, 2000);
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                showMessage('loginMessage', 'Por favor, preencha todos os campos.', 'error');
+                return;
+            }
+
+            const user = users.find(user => user.email === email && user.password === password);
+            
+            if (user) {
+                currentUser = user;
+                showMessage('loginMessage', `Bem-vindo, ${user.name}!`, 'success');
+                
+                setTimeout(() => {
+                    showTodoApp();
+                }, 1500);
+            } else {
+                showMessage('loginMessage', 'Email ou senha incorretos.', 'error');
+            }
+        }
+
+        function showTodoApp() {
+            document.getElementById('authContainer').style.display = 'none';
+            document.getElementById('todoContainer').classList.add('active');
+            
+            // Atualizar título com nome do usuário
+            document.getElementById('todoTitle').textContent = `📋 Lista de ${currentUser.name}`;
+            
+            // Inicializar a lista de tarefas
+            todoApp = new TodoList(currentUser.name);
+            
+            // Efeito de digitação no título
+            const title = document.getElementById('todoTitle');
+            const originalText = title.textContent;
+            title.textContent = '';
+            let i = 0;
+            const typeWriter = () => {
+                if (i < originalText.length) {
+                    title.textContent += originalText.charAt(i);
+                    i++;
+                    setTimeout(typeWriter, 100);
+                }
+            };
+            setTimeout(typeWriter, 500);
+        }
+
+        function logout() {
+            currentUser = null;
+            todoApp = null;
+            document.getElementById('todoContainer').classList.remove('active');
+            document.getElementById('authContainer').style.display = 'block';
+            document.getElementById('loginForm').reset();
+            clearMessages();
+        }
+
+        function showForgotPassword() {
+            alert('Funcionalidade de recuperação de senha não implementada neste exemplo.');
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            // Carregar usuários do localStorage
+            const savedUsers = localStorage.getItem('users');
+            if (savedUsers) {
+                users = JSON.parse(savedUsers);
+            }
+
+            // Adicionar usuário de teste se não existir
+            if (!users.find(user => user.email === 'teste@exemplo.com')) {
+                users.push({
+                    name: 'Usuário Teste',
+                    email: 'teste@exemplo.com',
+                    password: '123456'
+                });
+                localStorage.setItem('users', JSON.stringify(users));
+            }
+
+            // Event listeners
+            document.getElementById('signupForm').addEventListener('submit', handleSignup);
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+
+            console.log('Usuário de teste disponível:');
+            console.log('Email: teste@exemplo.com');
+            console.log('Senha: 123456');
+        });
+    </script>
+</body>
+</html>
